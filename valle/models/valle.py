@@ -138,6 +138,19 @@ class VALLF(nn.Module):
             alpha=True,
         )
 
+        self.ar_text_encoder = TransformerEncoder(
+            TransformerEncoderLayer(
+                d_model,
+                nhead,
+                dim_feedforward=d_model * 4,
+                dropout=0.1,
+                batch_first=True,
+                norm_first=norm_first,
+            ),
+            num_layers=num_layers,
+            norm=LayerNorm(d_model) if norm_first else None,
+        )
+
         self.ar_decoder = decoder_cls(
             decoder_layer_cls(
                 d_model,
@@ -440,6 +453,7 @@ class VALLF(nn.Module):
         x = self.ar_text_embedding(text)
         x = self.ar_text_prenet(x)
         x = self.ar_text_position(x)
+        x = self.ar_text_encoder(x)
 
         total_loss, metrics = 0.0, {}
 
